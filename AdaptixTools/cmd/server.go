@@ -35,7 +35,7 @@ var serverBuildCmd = &cobra.Command{
 func init() {
 	serverBuildCmd.Flags().BoolVarP(&serverBuildInstallDeps, "install-deps", "d", false, "install host build deps via apt (Linux)")
 	serverBuildCmd.Flags().BoolVar(&serverBuildGenCert, "gen-cert", false, "generate TLS certs in dist_dir (server.rsa.key/crt)")
-	serverBuildCmd.Flags().BoolVar(&serverBuildForceCert, "force-cert", false, "overwrite existing server.rsa.{key,crt}")
+	serverBuildCmd.Flags().BoolVar(&serverBuildForceCert, "force-cert", false, "overwrite existing server.rsa.{key,crt} (implies --gen-cert)")
 	serverBuildCmd.Flags().BoolVar(&serverBuildNoPackages, "no-packages", false, "do not install adaptix.spec packages: after build")
 	serverBuildCmd.Flags().BoolVar(&serverBuildNoProfile, "no-profile", false, "do not copy or modify profile (profile: seed + prune + package registration)")
 
@@ -71,6 +71,9 @@ func runServerBuild(c *cobra.Command, _ []string) error {
 	}
 	if err := layout.BuildServer(c.Context(), out, project.BuildOptions{NoProfile: serverBuildNoProfile}); err != nil {
 		return err
+	}
+	if serverBuildForceCert {
+		serverBuildGenCert = true
 	}
 	if serverBuildGenCert {
 		if err := layout.GenerateCerts(c.Context(), out, project.CertOptions{Force: serverBuildForceCert}); err != nil {
