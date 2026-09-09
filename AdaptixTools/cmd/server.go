@@ -10,6 +10,7 @@ import (
 
 	"axtool/internal/profile"
 	"axtool/internal/project"
+	"axtool/internal/spec"
 )
 
 var (
@@ -58,13 +59,7 @@ func runServerBuild(c *cobra.Command, _ []string) error {
 		return err
 	}
 	if serverBuildInstallDeps {
-		srv, err := resolveProjectSpec()
-		if err != nil {
-			return err
-		}
-		pkgs := srv.Deps.AptPackages(true, false)
-
-		pkgs = append(pkgs, collectLocalPackageAptDeps(srv)...)
+		pkgs := spec.CollectInstallAptDeps(layout.ProjectRoot, layout.Spec, true, false)
 		if err := project.InstallAptDeps(c.Context(), out, pkgs); err != nil {
 			return err
 		}
